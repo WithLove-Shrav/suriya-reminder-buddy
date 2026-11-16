@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --bg: #ffffff; --fg: #1f2328; --border: rgba(0,0,0,.12); --accent: #e5484d; --muted: #e8eaed; --mutedfg: #1f2328; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #2a2b30; --fg: #f1f2f4; --border: rgba(255,255,255,.14); --muted: #3b3d44; --mutedfg: #f1f2f4; } }
+  html, body { margin: 0; height: 100%; background: transparent; overflow: hidden; user-select: none; -webkit-user-select: none; cursor: default;
+               font: 14px/1.45 -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; }
+  #root { position: fixed; inset: 0; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-end; padding: 6px 10px 6px; gap: 12px; opacity: 0; }
+  #root[data-corner$="left"] { align-items: flex-start; }
+  #root.show { animation: pop .45s cubic-bezier(.2,1.4,.4,1) forwards; }
+  #bubble { position: relative; max-width: 270px; box-sizing: border-box; padding: 12px 14px; border-radius: 16px; color: var(--fg);
+            background: var(--bg); border: 1px solid var(--border); box-shadow: 0 8px 24px rgba(0,0,0,.28); margin-right: 18px; }
+  #root[data-corner$="left"] #bubble { margin-right: 0; margin-left: 18px; }
+  #bubble::after { content: ""; position: absolute; bottom: -8px; right: 52px; width: 14px; height: 14px; background: var(--bg);
+            border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); transform: rotate(45deg); }
+  #root[data-corner$="left"] #bubble::after { right: auto; left: 52px; }
+  #text { white-space: pre-wrap; word-wrap: break-word; }
+  #actions { display: flex; gap: 8px; margin-top: 10px; }
+  #actions[hidden] { display: none; }
+  button { flex: 1; border: 0; border-radius: 10px; padding: 7px 12px; font: inherit; font-weight: 600; cursor: pointer; transition: transform .08s, filter .15s; }
+  button:hover { filter: brightness(1.08); }
+  button:active { transform: scale(.96); }
+  #yes { background: var(--accent); color: #fff; }
+  #no { background: var(--muted); color: var(--mutedfg); }
+  #avatar { width: 160px; height: auto; margin: 0 6px; filter: drop-shadow(0 6px 10px rgba(0,0,0,.35)); animation: float 3.2s ease-in-out infinite; transform-origin: 50% 100%; pointer-events: none; }
+  #avatar.bounce { animation: bounce .7s ease-out 2, float 3.2s ease-in-out 1.4s infinite; }
+  #avatar.dim { opacity: .75; animation: sway 4s ease-in-out infinite; }
+  @keyframes pop { 0% { opacity: 0; transform: translateY(28px) scale(.85); } 100% { opacity: 1; transform: none; } }
+  @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+  @keyframes bounce { 0% { transform: translateY(0); } 40% { transform: translateY(-16px) scale(1.04); } 100% { transform: translateY(0); } }
+  @keyframes sway { 0%,100% { transform: rotate(-1.2deg); } 50% { transform: rotate(1.2deg); } }
+  @media (prefers-reduced-motion: reduce) { #avatar, #root.show { animation: none !important; } #root.show { opacity: 1; } }
+</style></head>
+<body>
+  <div id="root" data-corner="bottom-right">
+    <div id="bubble" role="status">
+      <div id="text"></div>
+      <div id="actions" hidden><button id="yes">Yes</button><button id="no">Not now</button></div>
+    </div>
+    <img id="avatar" alt="" draggable="false">
+  </div>
+<script>
+  const $ = (id) => document.getElementById(id);
+  let current = null;
+  function send(answer) {
+    if (!current) return;
+    window.webkit.messageHandlers.buddy.postMessage({ type: 'answer', id: current, answer });
+    $('actions').hidden = true;
+  }
+  $('yes').onclick = () => send('yes');
+  $('no').onclick = () => send('no');
+  // p: { id, text, use, fx, ask, corner }
+  window.renderBuddy = (p) => {
+    current = p.ask ? p.id : null;
+    $('root').dataset.corner = p.corner || 'bottom-right';
+    const src = '../assets/' + p.use + '.png';
+    if ($('avatar').getAttribute('src') !== src) $('avatar').setAttribute('src', src);
+    $('avatar').className = p.fx || '';
+    $('text').textContent = p.text;
+    $('actions').hidden = !p.ask;
+    const r = $('root');
+    r.classList.remove('show'); void r.offsetWidth; r.classList.add('show');
+  };
+</script>
+</body></html>

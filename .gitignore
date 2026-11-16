@@ -1,0 +1,9 @@
+.DS_Store
+node_modules/
+dist/
+.test-build/
+*.vsix
+# built from buddy/Buddy.swift by `npm run build:buddy`
+buddy/companion-buddy
+# full-size source art (the 512px poses in assets/ are what ships)
+assets/original/

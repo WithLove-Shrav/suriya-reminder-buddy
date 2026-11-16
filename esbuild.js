@@ -1,0 +1,14 @@
+const esbuild = require('esbuild');
+const production = process.argv.includes('--production');
+esbuild.build({
+  entryPoints: ['src/extension.ts'],
+  bundle: true,
+  outfile: 'dist/extension.js',
+  external: ['vscode'],
+  format: 'cjs',
+  platform: 'node',
+  target: 'node20',
+  sourcemap: !production,
+  minify: production,
+  logLevel: 'info',
+}).catch(() => process.exit(1));

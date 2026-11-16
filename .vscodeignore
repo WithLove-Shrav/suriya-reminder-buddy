@@ -1,0 +1,8 @@
+**
+!dist/extension.js
+!assets/*.png
+!media/**
+!buddy/buddy.html
+!buddy/companion-buddy
+!package.json
+!README.md

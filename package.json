@@ -1,0 +1,187 @@
+{
+  "name": "reminder-companion",
+  "displayName": "Suriya \u2013 My Reminder Buddy",
+  "description": "A cute floating buddy named Suriya who nudges you to drink water, rest your eyes, stretch and walk \u2014 across every Antigravity / VS Code window.",
+  "version": "0.1.0",
+  "publisher": "local",
+  "license": "UNLICENSED",
+  "private": true,
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "icon": "media/icon.png",
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "reminderCompanion",
+          "title": "Companion",
+          "icon": "media/companion.svg"
+        }
+      ]
+    },
+    "views": {
+      "reminderCompanion": [
+        {
+          "type": "webview",
+          "id": "reminderCompanion.view",
+          "name": "Companion"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "reminderCompanion.toggle",
+        "title": "Companion: Enable / Disable"
+      },
+      {
+        "command": "reminderCompanion.nudgeNow",
+        "title": "Companion: Nudge Me Now (next reminder type)"
+      },
+      {
+        "command": "reminderCompanion.nudgeChoose",
+        "title": "Companion: Nudge Me (Choose Type)"
+      },
+      {
+        "command": "reminderCompanion.simulateWelcomeBack",
+        "title": "Companion: Simulate Welcome-Back (after 10h away)"
+      },
+      {
+        "command": "reminderCompanion.openView",
+        "title": "Companion: Show Companion"
+      }
+    ],
+    "configuration": {
+      "title": "Reminder Companion",
+      "properties": {
+        "reminderCompanion.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Turn the companion's automatic reminders on or off."
+        },
+        "reminderCompanion.name": {
+          "type": "string",
+          "default": "Shravya",
+          "description": "What the companion should call you. Leave empty for 'friend'."
+        },
+        "reminderCompanion.tone": {
+          "type": "string",
+          "enum": [
+            "cheerful",
+            "calm"
+          ],
+          "default": "cheerful",
+          "description": "Personality of the messages."
+        },
+        "reminderCompanion.waterMinutes": {
+          "type": "number",
+          "default": 45,
+          "minimum": 0,
+          "description": "Minutes between water reminders (0 disables)."
+        },
+        "reminderCompanion.breakMinutes": {
+          "type": "number",
+          "default": 30,
+          "minimum": 0,
+          "description": "Minutes between screen-break (eye rest) reminders (0 disables)."
+        },
+        "reminderCompanion.stretchMinutes": {
+          "type": "number",
+          "default": 60,
+          "minimum": 0,
+          "description": "Minutes between stretch reminders (0 disables)."
+        },
+        "reminderCompanion.walkMinutes": {
+          "type": "number",
+          "default": 90,
+          "minimum": 0,
+          "description": "Minutes between walk reminders (0 disables)."
+        },
+        "reminderCompanion.idleMinutes": {
+          "type": "number",
+          "default": 5,
+          "minimum": 1,
+          "description": "Minutes without activity in the IDE before you count as idle (reminders pause)."
+        },
+        "reminderCompanion.awayHours": {
+          "type": "number",
+          "default": 10,
+          "minimum": 1,
+          "description": "Hours away before the companion welcomes you back."
+        },
+        "reminderCompanion.snoozeMinutes": {
+          "type": "number",
+          "default": 10,
+          "minimum": 1,
+          "description": "How long 'Not now' snoozes a reminder (grows if you keep saying no)."
+        },
+        "reminderCompanion.minGapMinutes": {
+          "type": "number",
+          "default": 10,
+          "minimum": 1,
+          "description": "Minimum minutes between any two reminders."
+        },
+        "reminderCompanion.notify": {
+          "type": "string",
+          "enum": [
+            "whenHidden",
+            "always",
+            "never"
+          ],
+          "default": "whenHidden",
+          "description": "Also show reminders as a notification with Yes / Not now buttons."
+        },
+        "reminderCompanion.floatingBuddy": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the avatar and speech bubble in a small floating window on your desktop (macOS). Falls back to notifications if unavailable."
+        },
+        "reminderCompanion.buddyCorner": {
+          "type": "string",
+          "enum": [
+            "bottom-right",
+            "bottom-left",
+            "top-right",
+            "top-left"
+          ],
+          "default": "bottom-right",
+          "description": "Screen corner for the floating buddy."
+        },
+        "reminderCompanion.companionName": {
+          "type": "string",
+          "default": "Suriya",
+          "description": "The character's own name, used in his introductions."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "test": "node tests/build.js && node --no-warnings --test --test-force-exit tests/logic.test.ts tests/companion.test.ts tests/buddy.test.ts",
+    "build": "node esbuild.js",
+    "package": "npm run build:buddy && node esbuild.js --production && vsce package --no-dependencies --skip-license --allow-missing-repository -o reminder-companion.vsix",
+    "build:buddy": "swiftc -O -target arm64-apple-macos12 buddy/Buddy.swift -o buddy/.arm64 -framework Cocoa -framework WebKit && swiftc -O -target x86_64-apple-macos12 buddy/Buddy.swift -o buddy/.x86 -framework Cocoa -framework WebKit && lipo -create buddy/.arm64 buddy/.x86 -output buddy/companion-buddy && rm buddy/.arm64 buddy/.x86"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/vscode": "^1.90.0",
+    "@vscode/vsce": "^3.0.0",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.6.0"
+  },
+  "keywords": [
+    "reminder",
+    "wellness",
+    "water",
+    "break",
+    "companion",
+    "antigravity"
+  ]
+}
